@@ -74,7 +74,7 @@ G4double efficiency(G4double energy) {
 
         G4double dE = abs(photonEnergy[0]-energy);
 	int j=0;
-	for (int i=1; i<23; i++)
+	for (int i=1; i<20; i++)
 	{
 	  if (abs(photonEnergy[i]-energy)<dE)
 	     {
@@ -108,8 +108,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   
   if (aTrack->GetTrackStatus() == fStopAndKill) {
     if (aTrack->GetDefinition()->GetParticleName() == "opticalphoton") {
-        if(volume->GetName()=="pmt"|| volume->GetName()=="pmtDown"){
-				Nphoton1++; 
+        if(volume->GetName()=="Photocathode"){
+        G4double Ephoton = aTrack->GetKineticEnergy();
+        G4double prob_photon = efficiency(Ephoton);
+				Nphoton3++; 
   		}
 	  }
   }
@@ -117,7 +119,17 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   if (volume == fScoringVolume){
     // collect energy deposited in this step
     G4double edepStep = step->GetTotalEnergyDeposit();
-    fEventAction->AddEdep(edepStep);
-  }  
+    fEventAction->AddEdep(edepStep);  
 
+  // Сохраняем только если есть депонирование энергии (взаимодействие)
+    if (edepStep > 0) {
+      G4double Energy = aTrack->GetTotalEnergy();
+      G4double time = aTrack->GetGlobalTime();
+      
+      man->FillNtupleDColumn(0, 0, Energy);    // Полная энергия
+      man->FillNtupleDColumn(0, 1, edepStep);  // Депонированная энергия  
+      man->FillNtupleDColumn(0, 2, time);      // Время
+      man->AddNtupleRow(0);
+    }  
+  }
 }

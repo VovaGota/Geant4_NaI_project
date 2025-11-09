@@ -31,6 +31,7 @@
 #define B1DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
+#include "Materials.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
@@ -43,15 +44,20 @@ namespace B1
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-    DetectorConstruction() = default;
-    ~DetectorConstruction() override = default;
+    DetectorConstruction();
+    ~DetectorConstruction() override;
 
     G4VPhysicalVolume* Construct() override;
+    void ConstructSDandField() override;
 
     G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
-
+ 
   protected:
     G4LogicalVolume* fScoringVolume = nullptr;
+    
+  private:
+    Materials* fMaterials; // Менеджер материалов
+    
 };
 
 }  // namespace B1

@@ -71,45 +71,61 @@ RunAction::RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run* run)
 {
+
   auto analysisManager = G4AnalysisManager::Instance();
+  
+  // Закрыть предыдущий файл, если открыт
+  if (analysisManager->GetFileName() != "") {
+    analysisManager->CloseFile();
+  }
+  
+    // Явно указываем режим merging
+    G4bool mergeNtuples = false;
+    analysisManager->SetNtupleMerging(mergeNtuples);
 
-  std::string runnumber = std::to_string( run->GetRunID() );
+  std::string runnumber = std::to_string(run->GetRunID());
 
-  G4String fileName = "Run" + runnumber + ".root"; // select root format
+  G4String folderPath = "Results/";
+  G4String fileName = folderPath + "AllRuns.root";
 
   analysisManager->OpenFile(fileName);
+  
+  // Создаем гистограммы заново
+  analysisManager->CreateH1("Edep","Energy deposit",1000 ,0.*keV,10.*MeV);
+  
+  // Создаем ntuple заново
+    analysisManager->CreateNtuple("Ntuple", "Ntuple");
+    analysisManager->CreateNtupleDColumn("TotalEnergy");    // колонка 0
+    analysisManager->CreateNtupleDColumn("DepositedEnergy"); // колонка 1  
+    analysisManager->CreateNtupleDColumn("Time");           // колонка 2
+    analysisManager->FinishNtuple();
+  
 
-  //Create histogram-s
-  analysisManager->CreateH1("Edep","Energy deposit",100,0.*keV,10.*MeV);
-
-  //Create ntuple(s)
-  analysisManager->CreateNtuple("Ntuple", "Ntuple");
-  analysisManager->CreateNtupleDColumn("Energy");
-  analysisManager->FinishNtuple();
-
+  /*
   // inform the runManager to save random number seed
-  //G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+  G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 
   // reset accumulables to their initial values
-  //G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  //accumulableManager->Reset();
+  G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
+  accumulableManager->Reset();
+  */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::EndOfRunAction(const G4Run* run)
 {
-
-  auto analysisManager = G4AnalysisManager::Instance(); 
+  auto analysisManager = G4AnalysisManager::Instance();
   
   G4int nofEvents = run->GetNumberOfEvent();
   if (nofEvents == 0) return;
 
-  // Write and close file 
-  analysisManager->Write(); 
+  analysisManager->Write();
   analysisManager->CloseFile();
   
-
+  // Очищаем анализ после записи
+  analysisManager->Clear();
+  
 /*
   // Merge accumulables
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();

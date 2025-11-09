@@ -29,9 +29,9 @@
 
 #include "EventAction.hh"
 #include "G4AnalysisManager.hh"
-
+#include "G4SystemOfUnits.hh"
 #include "RunAction.hh"
-
+#include "G4RunManager.hh"
 namespace B1
 {
 
@@ -50,17 +50,16 @@ void EventAction::BeginOfEventAction(const G4Event*)
 
 void EventAction::EndOfEventAction(const G4Event*)
 {
-  auto analysisManager = G4AnalysisManager::Instance(); 
-
-  //Fill histograms 
-  analysisManager->FillH1(0, fEdep); // Fill value as MeV 
-
-  //Fill ntuples 
-  analysisManager->FillNtupleDColumn(0, fEdep); 
-  analysisManager->AddNtupleRow();  
+    auto analysisManager = G4AnalysisManager::Instance(); 
+    analysisManager->FillH1(0, fEdep);
+    
+    analysisManager->FillNtupleDColumn(0, 1, fEdep);
+    analysisManager->AddNtupleRow(0);
+    
+    fEdep = 0.;
  
   // accumulate statistics in run action
-  fRunAction->AddEdep(fEdep);
+  //fRunAction->AddEdep(fEdep);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

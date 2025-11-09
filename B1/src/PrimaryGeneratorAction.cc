@@ -28,7 +28,7 @@
 /// \brief Implementation of the B1::PrimaryGeneratorAction class
 
 #include "PrimaryGeneratorAction.hh"
-
+#include "G4ParticleDefinition.hh"
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
@@ -36,6 +36,7 @@
 #include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
+#include "G4IonTable.hh"
 
 namespace B1
 {
@@ -52,7 +53,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   G4String particleName;
   G4ParticleDefinition* particle = particleTable->FindParticle(particleName = "gamma");
   fParticleGun->SetParticleDefinition(particle);
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 0.));
   fParticleGun->SetParticleEnergy(6. * MeV);
 }
 
@@ -67,6 +68,18 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
+  /*Particle Type
+  G4int Z = 19;
+  G4int A = 40;
+
+  G4double charge = 1. * eplus;
+  G4double energy = 0. * keV;
+
+  G4ParticleDefinition *ion = G4IonTable:: GetIonTable()->GetIon(Z,A,energy);
+  fParticleGun->SetParticleDefinition(ion);
+  fParticleGun->SetParticleCharge(charge);
+  fParticleGun->SetParticleEnergy(energy);*/
+
   // this function is called at the begining of ecah event
   //
 
@@ -93,12 +106,15 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     msg << "The gun will be place at the center.";
     G4Exception("PrimaryGeneratorAction::GeneratePrimaries()", "MyCode0002", JustWarning, msg);
   }
-
+/*
   G4double size = 0.8;
   G4double x0 = size * envSizeXY * (G4UniformRand() - 0.5);
   G4double y0 = size * envSizeXY * (G4UniformRand() - 0.5);
   G4double z0 = -0.5 * envSizeZ;
-
+*/
+  G4double x0 = 0; 
+  G4double y0 = 0;
+  G4double z0 = 0;
   fParticleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
 
   fParticleGun->GeneratePrimaryVertex(event);
