@@ -28,7 +28,6 @@
 /// \brief Implementation of the B1::ActionInitialization class
 
 #include "ActionInitialization.hh"
-
 #include "EventAction.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"

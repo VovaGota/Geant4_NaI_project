@@ -36,17 +36,20 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4OpticalPhoton.hh"
 //#include "Analysis.hh"
+#include "Randomize.hh"
 #include <G4VProcess.hh>
 #include <cmath>
 #define PI 3.14159265
 
 int Nphoton1 = 0;
 int Nphoton2 = 0;
-int Nphoton3 = 0;
+int Nphoton3 = 0; //счётчик фотоэлектронов
 int Nphoton4 = 0;
 
-using namespace B1;
+namespace B1 {
 
 SteppingAction::SteppingAction(EventAction* eventAction)
 : G4UserSteppingAction(),
@@ -66,23 +69,25 @@ G4double efficiency(G4double energy) {
     4.50,4.60,4.73,4.83,4.93};
 
 
-        G4double efficiencyPMT[] =
-        {0.003,0.005,0.011,0.022,0.041,
-          0.077,0.141,0.236,0.272,0.248,
-          0.198,0.134,0.095,0.058,0.042,
-          0.028,0.015,0.009,0.005,0.003};
+  G4double efficiencyPMT[] =
+  {0.003,0.005,0.011,0.022,0.041,
+    0.077,0.141,0.236,0.272,0.248,
+    0.198,0.134,0.095,0.058,0.042,
+    0.028,0.015,0.009,0.005,0.003};
 
-        G4double dE = abs(photonEnergy[0]-energy);
-	int j=0;
-	for (int i=1; i<20; i++)
+  
+	for (size_t i=0; i<20; i++)
 	{
-	  if (abs(photonEnergy[i]-energy)<dE)
+	  if (energy >= photonEnergy[i] && energy <= photonEnergy[i+1])
 	     {
-		dE = photonEnergy[i]-energy;
-        	j = i;
-      	     }
+          G4double x1 = photonEnergy[i];
+          G4double x2 = photonEnergy[i+1];
+          G4double y1 = efficiencyPMT[i];
+          G4double y2 = efficiencyPMT[i+1];
+          return y1 + (y2 - y1) * (energy - x1) / (x2 - x1);
+       }
 	}
-	return efficiencyPMT[j];
+	return 0.0;
 }
 
 void SteppingAction::UserSteppingAction(const G4Step* step)
@@ -93,43 +98,56 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
         (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
     fScoringVolume = detectorConstruction->GetScoringVolume();   
   }
-
-    // get volume of the current step
-  G4LogicalVolume* volume 
-    = step->GetPreStepPoint()->GetTouchableHandle()
-      ->GetVolume()->GetLogicalVolume();
-
-  // collect energy deposited in this step
   G4Track *aTrack=step->GetTrack();
-  G4double Energy = aTrack->GetTotalEnergy();
-  G4double time = aTrack->GetGlobalTime();
-	
-  G4AnalysisManager *man = G4AnalysisManager::Instance();
+
+  // position z tracking to ntuple
+  /*if (aTrack->GetTrackID()==1 && aTrack->GetCurrentStepNumber()==1)
+  {
+    G4StepPoint* preStep = step->GetPreStepPoint();
+    G4ThreeVector startPosition = preStep -> GetPosition();
+    G4double StartZ = startPosition.z();
+    fEventAction->RecPos(StartZ);
+  }*/
+
+    /*if (aTrack->GetVolume()->GetName()=="NaIScint" &&
+      aTrack->GetDynamicParticle()->GetParticleDefinition()->GetParticleName()=="opticalphoton" &&
+      step->IsFirstStepInVolume() &&
+      //step->GetPreStepPoint()->GetStepStatus()==fGeomBoundary
+      aTrack->GetCurrentStepNumber()==1) {
+        fEventAction->AddPhoton();
+      }*/
+
+    G4LogicalVolume* volume 
+      = step->GetPreStepPoint()->GetTouchableHandle()
+        ->GetVolume()->GetLogicalVolume();
+
+  G4AnalysisManager *analysisManager = G4AnalysisManager::Instance();
   
-  if (aTrack->GetTrackStatus() == fStopAndKill) {
-    if (aTrack->GetDefinition()->GetParticleName() == "opticalphoton") {
-        if(volume->GetName()=="Photocathode"){
-        G4double Ephoton = aTrack->GetKineticEnergy();
-        G4double prob_photon = efficiency(Ephoton);
-				Nphoton3++; 
-  		}
-	  }
-  }
-
-  if (volume == fScoringVolume){
+  if ((volume == fScoringVolume) && (aTrack->GetDynamicParticle()->GetCharge()!=0)){
     // collect energy deposited in this step
-    G4double edepStep = step->GetTotalEnergyDeposit();
-    fEventAction->AddEdep(edepStep);  
-
-  // Сохраняем только если есть депонирование энергии (взаимодействие)
-    if (edepStep > 0) {
-      G4double Energy = aTrack->GetTotalEnergy();
-      G4double time = aTrack->GetGlobalTime();
-      
-      man->FillNtupleDColumn(0, 0, Energy);    // Полная энергия
-      man->FillNtupleDColumn(0, 1, edepStep);  // Депонированная энергия  
-      man->FillNtupleDColumn(0, 2, time);      // Время
-      man->AddNtupleRow(0);
-    }  
+      G4double edepStep = step->GetTotalEnergyDeposit();
+      fEventAction->AddEdep(edepStep);
   }
+
+  if (aTrack->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition())
+      return;
+    
+    // get volume of the current step
+    G4StepPoint* postPoint = step->GetPostStepPoint();
+    G4VPhysicalVolume* postVolume = postPoint->GetPhysicalVolume();
+      G4LogicalVolume* pvolume 
+      = step->GetPostStepPoint()->GetTouchableHandle()
+        ->GetVolume()->GetLogicalVolume();
+
+    if (step->GetPostStepPoint()->GetStepStatus() == fGeomBoundary 
+        && postVolume->GetName()=="Photocathode")
+    {
+        G4double Ephoton = aTrack->GetKineticEnergy();
+        G4double prob_photon = efficiency(Ephoton*1e6);
+        if (G4UniformRand() < prob_photon) {
+          fEventAction->AddPhoton();
+        }    
+    } 
+
+}
 }

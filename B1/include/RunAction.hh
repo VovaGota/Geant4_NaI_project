@@ -59,7 +59,6 @@ class RunAction : public G4UserRunAction
 
   private:
     G4Accumulable<G4double> fEdep = 0.;
-    G4Accumulable<G4double> fEdep2 = 0.;
 };
 
 }  // namespace B1

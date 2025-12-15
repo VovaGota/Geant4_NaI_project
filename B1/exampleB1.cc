@@ -33,8 +33,11 @@
 #include "G4RunManagerFactory.hh"
 #include "G4SteppingVerbose.hh"
 #include "G4UIExecutive.hh"
+#include "G4RadioactiveDecayPhysics.hh"
 #include "G4UImanager.hh"
+#include "G4NuclideTable.hh"
 #include "G4VisExecutive.hh"
+#include "G4PhysListFactory.hh"
 #include "Shielding.hh"   // shield for photons
 #include "G4OpticalPhysics.hh" // optics to generate photons
 #include "Randomize.hh"
@@ -61,7 +64,7 @@ int main(int argc, char** argv)
 
   // Construct the default run manager
   //
-  auto runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::Default);
+  auto runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::Serial); //Default
 
   // Set mandatory initialization classes
   //
@@ -73,6 +76,7 @@ int main(int argc, char** argv)
   //G4VModularPhysicsList* physicsList = new QBBC;
   G4VModularPhysicsList* physicsList = new Shielding;
   G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+  physicsList->RegisterPhysics( new G4RadioactiveDecayPhysics );
   physicsList->SetVerboseLevel(1);
   physicsList->RegisterPhysics(opticalPhysics);
 

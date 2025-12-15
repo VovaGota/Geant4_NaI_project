@@ -26,6 +26,7 @@ public:
     // Methods to get optical surfaces
     G4OpticalSurface* GetTiO2Surface() const { return fTiO2Surface; }
     G4OpticalSurface* GetGlassSurface() const { return fGlassSurface; }
+    G4OpticalSurface* GetPMTSurface() const { return fPMTSurface; }
     
     // Method to initialize all materials
     void DefineMaterials();
@@ -55,6 +56,7 @@ private:
     // Optical surfaces
     G4OpticalSurface* fTiO2Surface;
     G4OpticalSurface* fGlassSurface;
+    G4OpticalSurface* fPMTSurface;
     
     // Helper methods
     void CreateElements();

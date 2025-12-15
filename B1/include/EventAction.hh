@@ -52,10 +52,14 @@ class EventAction : public G4UserEventAction
     void EndOfEventAction(const G4Event* event) override;
 
     void AddEdep(G4double edep) { fEdep += edep; }
+    void AddPhoton() { PhotoElectrons++; }
+    void RecPos(G4double posZ) { fposZ = posZ; }
 
   private:
     RunAction* fRunAction = nullptr;
     G4double fEdep = 0.;
+    G4int PhotoElectrons = 0; //counter of ohotoelectrons in current event
+    G4double fposZ = 0.;
 };
 
 }  // namespace B1

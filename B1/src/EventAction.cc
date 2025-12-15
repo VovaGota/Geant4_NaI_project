@@ -31,35 +31,43 @@
 #include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
 #include "RunAction.hh"
+#include "G4Event.hh"
 #include "G4RunManager.hh"
+#include "SteppingAction.hh"
+#include "G4SDManager.hh"
+#include "G4HCofThisEvent.hh"
+#include "G4UnitsTable.hh"
+
 namespace B1
 {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction(RunAction* runAction) : fRunAction(runAction) {}
+EventAction::EventAction(RunAction* runAction) 
+  : fRunAction(runAction), G4UserEventAction(), PhotoElectrons(0)
+{}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventAction::BeginOfEventAction(const G4Event*)
+void EventAction::BeginOfEventAction(const G4Event* event)
 {
   fEdep = 0.;
+  PhotoElectrons = 0; //recreating counter in the begin of action
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void EventAction::EndOfEventAction(const G4Event*)
 {
-    auto analysisManager = G4AnalysisManager::Instance(); 
-    analysisManager->FillH1(0, fEdep);
-    
-    analysisManager->FillNtupleDColumn(0, 1, fEdep);
-    analysisManager->AddNtupleRow(0);
-    
-    fEdep = 0.;
- 
-  // accumulate statistics in run action
-  //fRunAction->AddEdep(fEdep);
+  auto analysisManager = G4AnalysisManager::Instance();
+    analysisManager->FillH1(0, fEdep); 
+    analysisManager->FillH1(1, PhotoElectrons);
+    analysisManager->FillNtupleDColumn(0, fEdep);
+    analysisManager->FillNtupleDColumn(1, PhotoElectrons);
+    analysisManager->AddNtupleRow();  
+     // accumulate statistics in run action
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

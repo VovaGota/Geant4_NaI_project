@@ -57,7 +57,6 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     
   private:
     Materials* fMaterials; // Менеджер материалов
-    
 };
 
 }  // namespace B1

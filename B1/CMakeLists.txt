@@ -34,7 +34,16 @@ set(EXAMPLEB1_SCRIPTS
   init_vis.mac
   run1.mac
   run2.mac
+  Cs137.mac
+  foreach_loop.mac
+  gps_vis.mac
   vis.mac
+  Co60.mac
+  GlassCs.mac
+  GlassU.mac
+  GlassTh.mac
+  GlassK.mac
+  GlassCo.mac
   )
 
 foreach(_script ${EXAMPLEB1_SCRIPTS})

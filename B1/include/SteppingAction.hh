@@ -28,9 +28,12 @@
 /// \brief Definition of the B1::SteppingAction class
 
 #ifndef B1SteppingAction_h
-#define B1SteppingAction_h 1
+#define B1SteppingAction_h 
 
 #include "G4UserSteppingAction.hh"
+#include "globals.hh"
+#include "G4AnalysisManager.hh"
+
 
 class G4LogicalVolume;
 class G4Step;
@@ -50,11 +53,12 @@ class SteppingAction : public G4UserSteppingAction
 
     // method from the base class
     void UserSteppingAction(const G4Step*) override;
-
   private:
-    EventAction* fEventAction = nullptr;
+    EventAction* fEventAction;
     G4LogicalVolume* fScoringVolume = nullptr;
 };
+
+
 
 }  // namespace B1
 

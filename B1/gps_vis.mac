@@ -1,0 +1,17 @@
+/gps/particle ion
+/gps/ion 55 137 55 0
+
+/gps/pos/centre 10. 0. -0.1 cm
+
+/gps/ang/type iso
+/gps/pos/type Volume
+/gps/pos/shape Para 
+
+/gps/pos/halfx 0.05 cm   
+/gps/pos/halfy 0.05 cm   
+/gps/pos/halfz 0.05 cm   
+
+/gps/pos/type Point
+
+/gps/energy 0. MeV
+/run/beamOn 100   

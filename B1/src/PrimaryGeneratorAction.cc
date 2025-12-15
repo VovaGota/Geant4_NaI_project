@@ -37,13 +37,41 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include "G4IonTable.hh"
+#include "G4RadioactiveDecay.hh"
+#include "G4Event.hh"
+#include "G4GeneralParticleSource.hh"
+#include "globals.hh"
 
 namespace B1
 {
+/**/
+PrimaryGeneratorAction::PrimaryGeneratorAction()
+ : G4VUserPrimaryGeneratorAction(),
+   fParticleGun(0)
+{
+   fParticleGun = new G4GeneralParticleSource();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
+PrimaryGeneratorAction::~PrimaryGeneratorAction()
+{
+  delete fParticleGun;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+{
+  fParticleGun->GeneratePrimaryVertex(anEvent);
+}
+
+}//NAMESPACE B1
+
+//ADD NAMESPACE B1 BEFORE USE!!!!!!
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+/*PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
   G4int n_particle = 1;
   fParticleGun = new G4ParticleGun(n_particle);
@@ -78,7 +106,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   G4ParticleDefinition *ion = G4IonTable:: GetIonTable()->GetIon(Z,A,energy);
   fParticleGun->SetParticleDefinition(ion);
   fParticleGun->SetParticleCharge(charge);
-  fParticleGun->SetParticleEnergy(energy);*/
+  fParticleGun->SetParticleEnergy(energy);
 
   // this function is called at the begining of ecah event
   //
@@ -106,20 +134,20 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
     msg << "The gun will be place at the center.";
     G4Exception("PrimaryGeneratorAction::GeneratePrimaries()", "MyCode0002", JustWarning, msg);
   }
-/*
+
   G4double size = 0.8;
   G4double x0 = size * envSizeXY * (G4UniformRand() - 0.5);
   G4double y0 = size * envSizeXY * (G4UniformRand() - 0.5);
   G4double z0 = -0.5 * envSizeZ;
-*/
+
   G4double x0 = 0; 
   G4double y0 = 0;
   G4double z0 = 0;
   fParticleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
 
   fParticleGun->GeneratePrimaryVertex(event);
-}
+} */
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-}  // namespace B1
+  // namespace B1

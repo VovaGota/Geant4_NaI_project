@@ -43,7 +43,7 @@
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 #include "G4OpticalSurface.hh"
-
+#include "G4SDManager.hh"
 
 namespace B1
 {
@@ -58,7 +58,7 @@ DetectorConstruction::DetectorConstruction()
 
 DetectorConstruction::~DetectorConstruction()
 { 
-    fMaterials = Materials::GetInstance();// Materials управляется самостоятельно через Singleton
+  fMaterials = Materials::GetInstance();// Materials управляется самостоятельно через Singleton
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
@@ -68,7 +68,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // Envelope parameters
   //
-  G4double env_sizeXY = 5 * cm, env_sizeZ = 30 * cm;
+  G4double env_sizeXY = 20 * cm, env_sizeZ = 30 * cm;
   G4Material* env_mat = nist->FindOrBuildMaterial("G4_AIR");
 
   // Option to switch on/off checking of volumes overlaps
@@ -129,11 +129,12 @@ G4Material* Borosilicate_glass = fMaterials->GetBorosilicateGlass();
 // Оптические поверхности:
 G4OpticalSurface* TiO2Surface = fMaterials->GetTiO2Surface();
 G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
-
+G4OpticalSurface* PMTSurface = fMaterials->GetPMTSurface();
 
   //----------------------------------------------------------------------------------------------------------------------------------
   // Shape 1 DURAL
   //
+  
   G4Material* shape1_mat = DurAl;
   G4ThreeVector pos1 = G4ThreeVector(0, 0 * cm, 0 * cm);
 
@@ -179,11 +180,11 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
                                          shape3_mat,  // its material
                                          "Shape3");  // its name
 
-  new G4PVPlacement(nullptr,  // no rotation
+  auto RefPhys = new G4PVPlacement(nullptr,  // no rotation
                     pos3,  // at position
                     LogReflectorTiO2,  // its logical volume
                     "Shape3",  // its name
-                    logicEnv,  // its mother  volume
+                    logicShape1,  // its mother  volume
                     false,  // no boolean operation
                     0);  // copy number
                     //checkOverlaps  // overlaps checking
@@ -201,19 +202,19 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
   G4double shape2_hz = 7.5 * cm;
   G4double shape2_phimin = 0. * deg, shape2_phimax = 360. * deg;
   auto solidShape2 =
-    new G4Cons("Shape2",  // its name
+    new G4Cons("NaIScint",  // its name
               shape2_rmina, shape2_rmaxa, shape2_rminb, shape2_rmaxb,
                                 shape2_hz, shape2_phimin, shape2_phimax);  // its size
 
   auto LogScintillatorNaI = new G4LogicalVolume(solidShape2,  // its solid
                                          shape2_mat,  // its material
-                                         "Shape2");  // its name
+                                         "NaIScint");  // its name
 
   auto PhysScintNaI = 
   new G4PVPlacement(nullptr,  // no rotation
                     pos2,  // at position
                     LogScintillatorNaI,  // its logical volume
-                    "Shape2",  // its name
+                    "NaIScint",  // its name
                     LogReflectorTiO2,  // its mother  volume
                     false,  // no boolean operation
                     0);  // copy number
@@ -222,28 +223,28 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
   // Shape 4  Glass
  //  G4Material* Glass = nist->FindOrBuildMaterial("G4_GLASS_PLATE");
   G4Material* shape4_mat = myGlass;
-  G4ThreeVector pos4 = G4ThreeVector(0, 0 * cm, -7.7 * cm);
+  G4ThreeVector pos4 = G4ThreeVector(0, 0 * cm, -7.59 * cm);
 
   // Trapezoid shape
-  G4double shape4_rmina = 0 * cm, shape4_rmaxa = 1.27 * cm;
-  G4double shape4_rminb = 0 * cm, shape4_rmaxb = 1.27 * cm;
+  G4double shape4_rmina = 0 * cm, shape4_rmaxa = 1.5 * cm;
+  G4double shape4_rminb = 0 * cm, shape4_rmaxb = 1.5 * cm;
   G4double shape4_hz = 0.1 * cm;
   G4double shape4_phimin = 0. * deg, shape4_phimax = 360. * deg;
   auto solidShape4 =
-   new G4Cons("Shape4",  // its name
+   new G4Cons("Glass",  // its name
               shape4_rmina, shape4_rmaxa, shape4_rminb, shape4_rmaxb,
                                 shape4_hz, shape4_phimin, shape4_phimax);  // its size
 
   auto logicShape4 = new G4LogicalVolume(solidShape4,  // its solid
                                          shape4_mat,  // its material
-                                         "Shape4");  // its name
+                                         "Glass");  // its name
 
   auto GlassPhys =  
   new G4PVPlacement(nullptr,  // no rotation
                     pos4,  // at position
                     logicShape4,  // its logical volume
-                    "Shape4",  // its name
-                    logicEnv,  // its mother  volume
+                    "Glass",  // its name
+                    LogScintillatorNaI,  // its mother  volume
                     false,  // no boolean operation
                     0);  // copy number
                    // checkOverlaps   overlaps checking
@@ -251,7 +252,7 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
   // Shape 5  Photocathode
   //
   G4Material* shape5_mat = Bialkali; //Точный материал фотокатода
-  G4ThreeVector pos5 = G4ThreeVector(0, 0 * cm, -7.8 * cm);
+  G4ThreeVector pos5 = G4ThreeVector(0, 0 * cm, -0.14 * cm);
 
   // Trapezoid shape
   G4double shape5_rmina = 0. * cm, shape5_rmaxa = 1.1 * cm;
@@ -259,19 +260,20 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
   G4double shape5_hz = 0.05 * cm;
   G4double shape5_phimin = 0. * deg, shape5_phimax = 360. * deg;
   auto solidShape5 =
-    new G4Cons("Shape5",  // its name
+    new G4Cons("Photocathode",  // its name
               shape5_rmina, shape5_rmaxa, shape5_rminb, shape5_rmaxb,
                                 shape5_hz, shape5_phimin, shape5_phimax);  // its size
 
   auto LogPhotocathode = new G4LogicalVolume(solidShape5,  // its solid
                                          shape5_mat,  // its material
-                                         "LogPhotocathode");  // its name
+                                         "PhotoCathode");  // its name
 
-  new G4PVPlacement(nullptr,  // no rotation
+
+  auto PhotocathodePhys = new G4PVPlacement(nullptr,  // no rotation
                     pos5,  // at position
                     LogPhotocathode,  // its logical volume
                     "Photocathode",  // its name
-                    logicEnv,  // its mother  volume
+                    logicShape4,  // its mother  volume
                     false,  // no boolean operation
                     0);  // copy number  // overlaps checking
    
@@ -279,7 +281,7 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
   // Shape 6 PMT
   //                    
   G4Material* shape6_mat = Borosilicate_glass; 
-  G4ThreeVector pos6 = G4ThreeVector(0, 0 * cm, -10.22 * cm);
+  G4ThreeVector pos6 = G4ThreeVector(0, 0 * cm, -10.27 * cm);
 
   // Trapezoid shape
   G4double shape6_rmina = 0. * cm, shape6_rmaxa = 1.27 * cm;
@@ -328,23 +330,66 @@ G4OpticalSurface* GlassSurface = fMaterials->GetGlassSurface();
                     false,  // no boolean operation
                     0);  // copy number  // overlaps checking
 
+// Pb Shielding
+/*  G4Material* shape8_mat =  nist->FindOrBuildMaterial("G4_Pb"); 
+  G4ThreeVector pos8 = G4ThreeVector(4. * cm, 0 * cm, -8.1 * cm);
+
+  // Trapezoid shape
+  G4double pX = 2.5 * cm;
+  G4double pY = 5. * cm;
+  G4double pZ = 7.5 * cm;
+ 
+  auto solidShape8 = new
+   G4Box("Shape8" ,  pX,  pY,  pZ);
+
+  auto logicShape8 = new G4LogicalVolume(solidShape8,  // its solid
+                                         shape8_mat,  // its material
+                                         "Shape8");  // its name
+
+  new G4PVPlacement(nullptr,  // no rotation
+                    pos8,  // at position
+                    logicShape8,  // its logical volume
+                    "Shape8",  // its name
+                    logicEnv,  // its mother  volume
+                    false,  // no boolean operation
+                    0);  // copy number  // overlaps checking
+  
+  // Second Block
+  G4ThreeVector pos8_2 = G4ThreeVector(4. * cm, 0 * cm, 7.9 * cm);
+
+  new G4PVPlacement(nullptr,  // no rotation
+                    pos8_2,  // at position
+                    logicShape8,  // its logical volume
+                    "Shape8_2",  // its name
+                    logicEnv,  // its mother  volume
+                    false,  // no boolean operation
+                    0);  // copy number  // overlaps checking
+
+*/
 // Creating Optical Surface for TiO2/NaI Border
 
     // Создаем граничную поверхность между сцинтиллятором и отражателем
     new G4LogicalBorderSurface(
         "ScintillatorTiO2Surface",  // имя поверхности
         PhysScintNaI,           // физический объем сцинтиллятора  
-        Mother_of_Reflector,   // физический объем мира (или родителя отражателя)
+        RefPhys,   // физический объем мира (или родителя отражателя)
         TiO2Surface                // оптическая поверхность
     );
 // Creating Optical Surface for Glass/NaI Border
 
-    // Создаем граничную поверхность между сцинтиллятором и отражателем
+    // м
     new G4LogicalBorderSurface(
         "ScintillatorGlassSurface",  // имя поверхности
         PhysScintNaI,           // физический объем сцинтиллятора  
         GlassPhys,   // физический объем стекла
         GlassSurface                // оптическая поверхность
+    );  
+
+        new G4LogicalBorderSurface(
+        "GlassPMTSurface",  // имя поверхности
+        GlassPhys,           // физический объем стекла
+        PhotocathodePhys,   // физический объем 
+        PMTSurface                // оптическая поверхность
     );  
 
 

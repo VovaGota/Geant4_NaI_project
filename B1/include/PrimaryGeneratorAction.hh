@@ -31,20 +31,42 @@
 #define B1PrimaryGeneratorAction_h 1
 
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4GeneralParticleSource.hh"
 
-
-
+class G4GeneralParticleSource;
 class G4ParticleGun;
 class G4Event;
 class G4Box;
+class G4GeneralParticleSource;
 
-namespace B1
+namespace B1 {
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+  public:
+    PrimaryGeneratorAction();
+   ~PrimaryGeneratorAction();
 
+    virtual void GeneratePrimaries(G4Event*);
+
+  private:
+    G4GeneralParticleSource* fParticleGun;
+};
+
+}
+
+//ADD NAMESPACE B1 BEFORE USE!!!!!!
 /// The primary generator action class with particle gun.
 ///
 /// The default kinematic is a 6 MeV gamma, randomly distribued
 /// in front of the phantom across 80% of the (X,Y) phantom size.
+
+
+/*
+
+
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
@@ -63,7 +85,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4Box* fEnvelopeBox = nullptr;
 };
 
-}  // namespace B1
+ // namespace B1*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

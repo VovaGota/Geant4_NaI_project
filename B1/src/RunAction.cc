@@ -49,57 +49,30 @@ namespace B1
 
 RunAction::RunAction()
 {
-  // add new units for dose
-  //
-  const G4double milligray = 1.e-3 * gray;
-  const G4double microgray = 1.e-6 * gray;
-  const G4double nanogray = 1.e-9 * gray;
-  const G4double picogray = 1.e-12 * gray;
+  auto analysisManager = G4AnalysisManager::Instance();
+  
+  // Закрыть предыдущий файл, если открытwsws
+  G4String folderPath = "Results_PMT/";
+  G4String fileName = folderPath  + "GCo.root";
 
-  new G4UnitDefinition("milligray", "milliGy", "Dose", milligray);
-  new G4UnitDefinition("microgray", "microGy", "Dose", microgray);
-  new G4UnitDefinition("nanogray", "nanoGy", "Dose", nanogray);
-  new G4UnitDefinition("picogray", "picoGy", "Dose", picogray);
-
-  // Register accumulable to the accumulable manager
-  G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  accumulableManager->Register(fEdep);
-  accumulableManager->Register(fEdep2);
+  // Создаем гистограммы заново
+  analysisManager->CreateH1("Energy absorption","Edep in NaI(Tl)",400 , 0.01*keV, 0.5*MeV);
+  analysisManager->CreateH1("Nphot_multi","Photon deposit",400 , 5 , 5000);
+  
+  // Создаем ntuple заново
+    analysisManager->CreateNtuple("Ntuple", "Ntuple");
+    analysisManager->CreateNtupleDColumn("Energy absorption");    // колонка 0
+    analysisManager->CreateNtupleDColumn("Photoel"); // колонка 1
+    analysisManager->CreateNtupleDColumn("Time");           // колонка 2
+    analysisManager->FinishNtuple();
+  
+  analysisManager->OpenFile(fileName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RunAction::BeginOfRunAction(const G4Run* run)
 {
-
-  auto analysisManager = G4AnalysisManager::Instance();
-  
-  // Закрыть предыдущий файл, если открыт
-  if (analysisManager->GetFileName() != "") {
-    analysisManager->CloseFile();
-  }
-  
-    // Явно указываем режим merging
-    G4bool mergeNtuples = false;
-    analysisManager->SetNtupleMerging(mergeNtuples);
-
-  std::string runnumber = std::to_string(run->GetRunID());
-
-  G4String folderPath = "Results/";
-  G4String fileName = folderPath + "AllRuns.root";
-
-  analysisManager->OpenFile(fileName);
-  
-  // Создаем гистограммы заново
-  analysisManager->CreateH1("Edep","Energy deposit",1000 ,0.*keV,10.*MeV);
-  
-  // Создаем ntuple заново
-    analysisManager->CreateNtuple("Ntuple", "Ntuple");
-    analysisManager->CreateNtupleDColumn("TotalEnergy");    // колонка 0
-    analysisManager->CreateNtupleDColumn("DepositedEnergy"); // колонка 1  
-    analysisManager->CreateNtupleDColumn("Time");           // колонка 2
-    analysisManager->FinishNtuple();
-  
 
   /*
   // inform the runManager to save random number seed
@@ -183,7 +156,7 @@ void RunAction::EndOfRunAction(const G4Run* run)
 void RunAction::AddEdep(G4double edep)
 {
   fEdep += edep;
-  fEdep2 += edep * edep;
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
