@@ -1,0 +1,11 @@
+/control/verbose 1
+/run/initialize
+ 
+/gps/particle ion
+/gps/ion 27 60     
+#Это для Со60
+ 
+/gps/position 0. 0. 0 cm
+/gps/direction 0 0 1 
+/run/printProgress 100
+/run/beamOn 1000

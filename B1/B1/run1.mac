@@ -1,0 +1,15 @@
+# electron_gps_commands.mac
+/run/initialize
+/vis/disable
+/control/verbose 1 
+/tracking/verbose 1
+
+# Настройка GPS
+/gps/particle gamma
+/gps/energy 100 keV
+/gps/position 0 0 0 cm
+
+# Команды для каждой позиции
+#/run/printProgress 1
+/run/beamOn 1
+

@@ -1,0 +1,28 @@
+/vis/disable
+/run/initialize
+#
+
+/gps/particle ion
+/gps/ion 19 40
+
+# point source
+#/gps/pos/type Point
+#/gps/pos/centre 0. 0. 30.65 mm
+
+/gps/pos/type Volume
+
+/gps/pos/shape Cylinder
+# hight of the Al Top Surface
+/gps/pos/centre 0. 0. -7.59 cm
+/gps/pos/radius 1.5 cm
+/gps/pos/halfz 0.1 cm
+#/gps/pos/confine World
+#confine to physical volume "Shape7"
+
+# angular distribution
+/gps/ang/type iso 
+
+/run/printProgress 5000
+/run/beamOn 58424
+# 
+#

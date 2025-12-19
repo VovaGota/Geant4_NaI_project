@@ -1,0 +1,15 @@
+/control/verbose 1
+/run/initialize
+/vis/disable
+
+#/gps/particle ion
+#/gps/ion 55 137 0 662. keV
+/gps/particle gamma
+/gps/energy 662 keV
+/gps/pos/type Point
+/gps/pos/centre 3.5 0. -0.1 cm
+/gps/ang/type iso
+
+
+/run/printProgress 10000
+/run/beamOn 100000
